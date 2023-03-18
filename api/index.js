@@ -1,10 +1,22 @@
 import express from "express";
 import { client } from "./db.js";
-
+import jwt from "jsonwebtoken";
 const app = express();
 
-// MIDDLEWARE
 
+
+//dapatkan token
+app.post("/api/token", ()=>{
+  const token = jwt.sign({
+    id: 1,
+    nama:"romi"
+  }, "mypa");
+
+  res.send(token);
+  
+  });
+ 
+  // MIDDLEWARE
 app.use((req, res, next) => {
   if (req.headers.authorization === "Bearer abcd") {
     next();
