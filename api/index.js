@@ -1,8 +1,49 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import { client } from "./db.js";
+<<<<<<< HEAD
 import jwt from "jsonwebtoken";
 const app = express();
 
+=======
+
+import jwt from "jsonwebtoken";
+
+const app = express();
+
+app.use(express.json());
+
+// ROUTE TANPA TOKEN
+
+// dapatkan token
+app.post("/api/token", async (req, res) => {
+  const results = await client.query(
+    `SELECT * FROM mahasiswa WHERE nim = '${req.body.nim}'`
+  );
+  if (results.rows.length > 0) {
+    if (req.body.password === results.rows[0].password) {
+      const token = jwt.sign(
+        {
+          id: 1,
+          nama: "Romi",
+        },
+        process.env.SECRET_KEY
+      );
+      res.send(token);
+    } else {
+      res.status(401);
+      res.send("Kata sandi salah.");
+    }
+  } else {
+    res.status(401);
+    res.send("Mahasiswa tidak ditemukan.");
+  }
+});
+
+// MIDDLEWARE
+>>>>>>> 5ffbbffbcbfbc55386487058282c21bcb97b73c7
 
 
 //dapatkan token
@@ -26,7 +67,6 @@ app.use((req, res, next) => {
   }
 });
 
-app.use(express.json());
 app.use(express.static("public"));
 
 // ROUTE MAHASISWA
@@ -34,7 +74,7 @@ app.use(express.static("public"));
 // tampilkan semua
 app.get("/api/mahasiswa", async (_req, res) => {
   const results = await client.query("SELECT * FROM mahasiswa");
-  res.send(results.rows);
+  res.json(results.rows);
 });
 
 // tampilkan satu
@@ -42,7 +82,7 @@ app.get("/api/mahasiswa/:id", async (req, res) => {
   const results = await client.query(
     `SELECT * FROM mahasiswa WHERE id = ${req.params.id}`
   );
-  res.send(results.rows[0]);
+  res.json(results.rows[0]);
 });
 
 // tambah
@@ -71,7 +111,7 @@ app.delete("/api/mahasiswa/:id", async (req, res) => {
 
 app.get("/api/pelatihan", async (_req, res) => {
   const results = await client.query("SELECT * FROM pelatihan");
-  res.send(results.rows);
+  res.json(results.rows);
 });
 
 app.listen(3000, () => {
