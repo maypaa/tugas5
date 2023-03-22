@@ -5,10 +5,12 @@ import express from "express";
 import { client } from "./db.js";
 
 const app = express();
+app.use(cookieParser());
 
 
 
 import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 
 
 app.use(express.json());
@@ -25,6 +27,7 @@ app.post("/api/token", async (req, res) => {
     if (req.body.password === results.rows[0].password) {
       const token = jwt.sign(results.rows[0], process.env.SECRET_KEY);
       res.send(token);
+      res.cookie("token", token);
     } else {
       res.status(401);
       res.send("Kata sandi salah.");
@@ -51,7 +54,7 @@ app.post("/api/token", ()=>{
  
   // MIDDLEWARE
 app.use((req, res, next) => {
-  console.log(req.headers.authorization);
+  console.log(req.cookies.lo);
   if (req.headers.authorization === "Bearer abcd") {
     next();
   } else {
@@ -111,3 +114,8 @@ app.get("/api/pelatihan", async (_req, res) => {
 app.listen(3000, () => {
   console.log("Server berhasil berjalan.");
 });
+
+//dapatkan mahasiswa yang login
+app.get("/api/me", (req,res)=>{
+      const me = jwt.verify(req.cookies.token, process.env.SECRET_KEY);
+})
