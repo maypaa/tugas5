@@ -4,6 +4,10 @@ dotenv.config();
 import express from "express";
 import { client } from "./db.js";
 
+
+import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
+
 const app = express();
 app.use(cookieParser());
 
@@ -14,11 +18,13 @@ import cookieParser from "cookie-parser";
 
 
 app.use(express.json());
+app.use(cookieParser());
+app.use(express.static("public"));
 
 // ROUTE TANPA TOKEN
 
 // dapatkan token
-app.post("/api/token", async (req, res) => {
+app.post("/api/login", async (req, res) => {
   const results = await client.query(
     `SELECT * FROM mahasiswa WHERE nim = '${req.body.nim}'`
   );
@@ -28,6 +34,8 @@ app.post("/api/token", async (req, res) => {
       const token = jwt.sign(results.rows[0], process.env.SECRET_KEY);
       res.send(token);
       res.cookie("token", token);
+      res.cookie("token", token);
+      res.send("Login berhasil.");
     } else {
       res.status(401);
       res.send("Kata sandi salah.");
@@ -57,13 +65,28 @@ app.use((req, res, next) => {
   console.log(req.cookies.lo);
   if (req.headers.authorization === "Bearer abcd") {
     next();
+  if (req.cookies.token) {
+    try {
+      jwt.verify(req.cookies.token, process.env.SECRET_KEY);
+      next();
+    } catch (err) {
+      res.status(401);
+      res.send("Anda harus login lagi.");
+    }
+
   } else {
     res.status(401);
-    res.send("Token salah.");
+    res.send("Anda harus login terlebih dahulu.");
+  
   }
-});
+}
+  });
 
-app.use(express.static("public"));
+// dapatkan mahasiswa yang login
+app.get("/api/me", (req, res) => {
+  const me = jwt.verify(req.cookies.token, process.env.SECRET_KEY);
+  res.json(me);
+});
 
 // ROUTE MAHASISWA
 
@@ -118,4 +141,4 @@ app.listen(3000, () => {
 //dapatkan mahasiswa yang login
 app.get("/api/me", (req,res)=>{
       const me = jwt.verify(req.cookies.token, process.env.SECRET_KEY);
-})
+});
