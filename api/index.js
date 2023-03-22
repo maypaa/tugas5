@@ -3,15 +3,13 @@ dotenv.config();
 
 import express from "express";
 import { client } from "./db.js";
-<<<<<<< HEAD
-import jwt from "jsonwebtoken";
-const app = express();
-
-=======
-
-import jwt from "jsonwebtoken";
 
 const app = express();
+
+
+
+import jwt from "jsonwebtoken";
+
 
 app.use(express.json());
 
@@ -22,15 +20,10 @@ app.post("/api/token", async (req, res) => {
   const results = await client.query(
     `SELECT * FROM mahasiswa WHERE nim = '${req.body.nim}'`
   );
+  // console.log(results.fields[0].dataTypeSize);
   if (results.rows.length > 0) {
     if (req.body.password === results.rows[0].password) {
-      const token = jwt.sign(
-        {
-          id: 1,
-          nama: "Romi",
-        },
-        process.env.SECRET_KEY
-      );
+      const token = jwt.sign(results.rows[0], process.env.SECRET_KEY);
       res.send(token);
     } else {
       res.status(401);
@@ -43,7 +36,6 @@ app.post("/api/token", async (req, res) => {
 });
 
 // MIDDLEWARE
->>>>>>> 5ffbbffbcbfbc55386487058282c21bcb97b73c7
 
 
 //dapatkan token
@@ -51,7 +43,7 @@ app.post("/api/token", ()=>{
   const token = jwt.sign({
     id: 1,
     nama:"romi"
-  }, "mypa");
+  }, process.env.SECRET_KEY);
 
   res.send(token);
   
@@ -59,6 +51,7 @@ app.post("/api/token", ()=>{
  
   // MIDDLEWARE
 app.use((req, res, next) => {
+  console.log(req.headers.authorization);
   if (req.headers.authorization === "Bearer abcd") {
     next();
   } else {
@@ -70,6 +63,7 @@ app.use((req, res, next) => {
 app.use(express.static("public"));
 
 // ROUTE MAHASISWA
+
 
 // tampilkan semua
 app.get("/api/mahasiswa", async (_req, res) => {
